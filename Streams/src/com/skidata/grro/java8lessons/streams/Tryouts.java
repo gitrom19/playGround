@@ -1,3 +1,4 @@
+package com.skidata.grro.java8lessons.streams;
 
 public class Tryouts {
 
