@@ -1,4 +1,4 @@
-Das chinesische Spiel Go gilt immer noch als die ultimative Herausforderung für jede künstliche Intelligenz. 
-Bislang konnte hier kein Computer gegen sehr gute menschliche Spieler gewinnen. 
-Facebook arbeitet nun aber an einem System, das sich bald als ernsthafte Konkurrenz erweisen könnte. 
+Das chinesische Spiel Go gilt immer noch als die ultimative Herausforderung für jede künstliche Intelligenz.
+Bislang konnte hier kein Computer gegen sehr gute menschliche Spieler gewinnen.
+Facebook arbeitet nun aber an einem System, das sich bald als ernsthafte Konkurrenz erweisen könnte.
 Auch für Facebook-Nutzer könnten die Fortschritte des Unternehmens in Sachen künstlicher Intelligenz viele Vorteile haben.

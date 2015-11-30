@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Tryouts {
@@ -24,8 +26,8 @@ public class Tryouts {
 
 	private static void test(String filename) {
 		List<String> words = makeWords(filename);
-		words.parallelStream().filter(s -> s.length() > 0).map(String::toUpperCase)
-				.forEach(s -> System.out.println(Thread.currentThread().getName() + ": " + s));
+		words.parallelStream().filter(s -> s.length() > 0).map(String::toUpperCase)   //intermediate operations
+				.forEach(s -> System.out.println(Thread.currentThread().getName() + ": " + s));  // final operation
 	}
 
 	private static void test2(String filename) {
@@ -80,8 +82,13 @@ public class Tryouts {
 		cubicB.forEach(z -> z.forEach(y -> {System.out.println(); y.forEach(System.out::print);}));
 
 	}
+	
+	private static void print (IntStream stream, boolean asChar) {
+		String format = (asChar) ? "%c" : "%d";
+		stream.forEach(i -> System.out.format(format,i));
+	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		String filename = "text.txt";
 		test(filename);
 		System.out.println("\n\n####################### 1 ######################\n\n");
@@ -94,6 +101,24 @@ public class Tryouts {
 		multipleFor();
 		System.out.println("\n\n####################### 4 ######################\n\n");
 		multipleFor1();
+		System.out.println("\n\n####################### 5 ######################\n\n");
+		Stream<String> sequentialStringStream = Stream.of("Ich", "ging", "im", "Walde", "so", "für", "mich", "hin", "...");
+		Stream<String> emptyStream = Stream.empty();
+		Stream<Double> infiniteSequentialStream = Stream.generate(Math::random);
+		Stream<Integer> sequentialIntegerStream = Stream.iterate(2, i -> i^2);
+		IntStream intStreamWithRange = IntStream.range(0,10);
+		String str = "abc";
+		IntStream chars1 = str.codePoints();
+		IntStream chars2 = str.chars();
+		print(chars1, true);
+		print(intStreamWithRange, false);
+		System.out.println("\n\n####################### 6 ######################\n\n");
+		String poem = "Ich ging im Wald so für mich hin und nichts zu suchen das war mein Sinn";
+		Stream<String> words = Pattern.compile("[^\\p{L}]").splitAsStream(poem);
+		words.forEach(s -> System.out.print("<" + s + ">"));
+		System.out.println("\n\n####################### 7 ######################\n\n");
+		IntStream characters = Files.lines(Paths.get(filename), java.nio.charset.StandardCharsets.ISO_8859_1).flatMap(Pattern.compile("[^\\p{L}]")::splitAsStream).flatMapToInt(String::chars);
+		characters.forEach(s -> System.out.format("%c", s));
 	}
 
 }
