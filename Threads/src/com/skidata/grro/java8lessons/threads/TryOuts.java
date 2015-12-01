@@ -1,10 +1,17 @@
 package com.skidata.grro.java8lessons.threads;
 
+import com.skidata.grro.java8lessons.threads.javamagazin0814.withlocks.DataSource;
+import com.skidata.grro.java8lessons.threads.javamagazin0814.withlocks.PerformanceTests;
+
 public class TryOuts {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		PerformanceTests pt = new PerformanceTests(new DataSource());
+		try {
+			pt.start();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
