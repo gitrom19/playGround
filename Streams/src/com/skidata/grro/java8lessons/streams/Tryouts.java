@@ -8,9 +8,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -133,40 +136,42 @@ public class Tryouts {
 		characters.forEach(s -> System.out.format("%c", s));
 		System.out.println("\n\n####################### 8 ######################\n\n");
 		// Collection - Collectors
-		List<String> stringStream = Arrays
-				.asList(new String[] { "State", "of", "the", "Lambda", "Libraries", "Edition" });
+		List<String> stringList = Arrays
+				.asList(new String[] { "State", "of", "the", "Lambda", "Libraries", "Edition", "Lambda" });
 		// Stream<String> stringStream = Stream.of( "State", "of", "the",
 		// "Lambda", "Libraries", "Edition" );
-		String resultString = stringStream.stream().collect(Collectors.joining(" "));
+		String resultString = stringList.stream().collect(Collectors.joining(" "));
 		System.out.println("Collect Result = " + resultString);
 		// inperformant, temporary String objects used
-		resultString = stringStream.stream().reduce("", (s1, s2) -> s1 + "|" + s2);
+		resultString = stringList.stream().reduce("", (s1, s2) -> s1 + "|" + s2);
 		System.out.println("Reduce Result = " + resultString);
 		StringBuilder sb = new StringBuilder();
 		// Now we have a stateful lambda expression!!! Be careful when use it in
 		// parallel streams, StringBuilder is not thread safe
 		// StringBuffer is an alternative --> performance and order of
 		// strings!!!
-		stringStream.stream().forEach(s -> {
+		stringList.stream().forEach(s -> {
 			sb.append(s);
 			sb.append(",");
 		});
 		resultString = sb.toString();
 		System.out.println("StringBuilder Result = " + resultString);
 
+		System.out.println("\n\n####################### 8b ######################\n\n");
 		// Using collectors
-		Set<String> resultSet = stringStream.parallelStream().filter(w -> w.length() > 0)
+		Set<String> resultSet = stringList.parallelStream().filter(w -> w.length() > 0)
 				.filter(w -> Character.isUpperCase(w.charAt(0))).collect(Collectors.toSet());
 		// Collectors.toSet() --> HashSet (unordered)
 		System.out.print("Filter out all uppercase words: ");
 		resultSet.stream().forEach(System.out::print);
 		System.out.println(System.lineSeparator());
-		Set<String> orderedResultSet = stringStream.parallelStream().filter(w -> w.length() > 0)
+		Set<String> orderedResultSet = stringList.parallelStream().filter(w -> w.length() > 0)
 				.filter(w -> Character.isUpperCase(w.charAt(0))).collect(Collectors.toCollection(TreeSet::new));
 		System.out.print("Filter out all uppercase words (ordered): ");
 		orderedResultSet.stream().forEach(System.out::print);
 		System.out.println(System.lineSeparator());
 
+		System.out.println("\n\n####################### 8c ######################\n\n");
 		// Map-Collectors
 		Collection<Person> people = new ArrayList<Person>();
 		people.add(new Person(1, "Hans", "AA"));
@@ -174,11 +179,13 @@ public class Tryouts {
 		people.add(new Person(3, "Kurt", "CC"));
 		people.add(new Person(4, "Andi", "DD"));
 		people.add(new Person(5, "Peter", "BB"));
+		people.add(new Person(6, "Heidi", "DD"));
 		Map<Integer, String> idToName = people.stream().collect(Collectors.toMap(Person::gettIN, Person::getName));
+		// Function.identity() == p -> p
 		Map<Integer, Person> idToPerson = people.stream()
 				.collect(Collectors.toMap(Person::gettIN, Function.identity()));
 		// Define what to do when there are multiple values for one key (second
-		// param)
+		// param), otherwise you get IllegalStateException("Duplicate key")
 		Map<String, List<Person>> addressToPerson = people.stream().collect(Collectors.toMap(Person::getAddress, p -> {
 			List<Person> tmp = new ArrayList<>();
 			tmp.add(p);
@@ -186,13 +193,88 @@ public class Tryouts {
 		} , (l1, l2) -> {
 			l1.addAll(l2);
 			return l1;
-		}));
-		idToName.forEach((i, s) -> System.out.println(i + ": " + s));
-		idToPerson.forEach((i, s) -> System.out.println(i + ": " + s));
-		addressToPerson.forEach((i, s) -> {
-			System.out.println(i + ": ");
-			s.stream().forEach(System.out::println);
+		} , TreeMap::new));
+		idToName.forEach((i, n) -> System.out.println(i + ": " + n));
+		System.out.println("\n---");
+		idToPerson.forEach((i, p) -> System.out.println(i + ": " + p));
+		System.out.println("\n---");
+		addressToPerson.forEach((a, lp) -> {
+			System.out.print(a + ": ");
+			lp.stream().forEach(System.out::print);
+			System.out.print(System.lineSeparator());
 		});
+		// More elegant
+		Map<String, List<Person>> addressToPersonGrouped = people.stream()
+				.collect(Collectors.groupingBy(Person::getAddress));
+		System.out.println("\n---");
+		addressToPersonGrouped.forEach((a, lp) -> {
+			System.out.print(a + ": ");
+			lp.stream().forEach(System.out::print);
+			System.out.print(System.lineSeparator());
+		});
+
+		//
+		System.out.println("\n--- Grouped by first character");
+		List<String> stringList2 = Arrays.asList(new String[] { "State", "of", "the", "Lambda", "Libraries", "Edition",
+				" ", "", "!", "of", "exciting" });
+		Map<Character, List<String>> groupedMap = stringList2.stream().filter(w -> w.length() > 0).distinct()
+				.collect(Collectors.groupingBy(w -> w.charAt(0)));
+		groupedMap.forEach((c, ls) -> {
+			System.out.print("<" + c + ":");
+			ls.forEach(System.out::print);
+			System.out.println(">");
+		});
+		System.out.println("\n--- Partitions: Uppercase?");
+		Map<Boolean, List<String>> partitionedMap = stringList2.stream().filter(w -> w.length() > 0).distinct()
+				.collect(Collectors.partitioningBy(w -> Character.isUpperCase(w.charAt(0))));
+		partitionedMap.forEach((c, ls) -> {
+			System.out.print("<" + c + ":");
+			ls.forEach(System.out::print);
+			System.out.println(">");
+		});
+		System.out.println("\n--- Partitions: downstream to maximum?");
+		Map<Character, Optional<String>> partitionedDownstreamedMap = stringList2.stream().filter(w -> w.length() > 0)
+				.distinct().collect(Collectors.groupingBy(w -> w.charAt(0), Collectors.maxBy(String::compareTo)));
+		partitionedDownstreamedMap.forEach((c, ls) -> {
+			System.out.print("<" + c + ":");
+			if (ls.isPresent()) {
+				System.out.print(ls.get());
+			} else {
+				System.out.print("<--->");
+			}
+			System.out.println(">");
+		});
+		System.out.println("\n--- Partitions: largest element?");
+		Optional<String> largestElement = stringList2.stream().filter(w -> w.length() > 0).distinct()
+				.collect(Collectors.maxBy(String::compareTo));
+		if (largestElement.isPresent()) {
+			System.out.println("largestElemement: <" + largestElement.get() + ">");
+		} else {
+			System.out.println("---");
+		}
+		// Simpler version:
+		Optional<String> largestElement2 = stringList2.stream().filter(w -> w.length() > 0).distinct()
+				.max(String::compareTo);
+
+		if (largestElement2.isPresent()) {
+			System.out.println("largestElemement: <" + largestElement.get() + ">");
+		} else {
+			System.out.println("---");
+		}
+
+		System.out.println("\n\n####################### 9 Side effects ######################\n\n");
+		List<Integer> intList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 0));
+		List<Integer> squaredIntList = intList.parallelStream().map(i -> i * i).collect(Collectors.toList());
+		squaredIntList.forEach(i -> System.out.print(i + ","));
+
+		ConcurrentHashMap<Integer, Integer> chm = new ConcurrentHashMap<>();
+		chm.put(4, 4);
+		chm.put(5, 5);
+		chm.keySet().stream().map(i -> i * 2).forEach(k -> chm.put(k, k));
+		// {16=16, 4=4, 20=20, 5=5, 8=8, 10=10}, nondeterministic result, -->
+		// avoid non-inference violations, no modification of the underlying
+		// data source of the stream.
+		System.out.println("\nCHM: " + chm);
 
 	}
 }
