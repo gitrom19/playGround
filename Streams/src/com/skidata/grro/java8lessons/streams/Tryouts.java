@@ -276,5 +276,11 @@ public class Tryouts {
 		// data source of the stream.
 		System.out.println("\nCHM: " + chm);
 
+		// If the the original list should be concatenated with the new
+		// calculations, save calculations intermediately.
+		List<Integer> underlyingList = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 0));
+		List<Integer> resultList = underlyingList.stream().map(i -> i * 2).collect(Collectors.toList());
+		underlyingList.addAll(resultList);
+		System.out.println("\nConcatenated list: " + underlyingList);
 	}
 }
