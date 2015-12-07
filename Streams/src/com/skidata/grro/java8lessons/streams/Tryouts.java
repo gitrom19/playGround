@@ -282,5 +282,13 @@ public class Tryouts {
 		List<Integer> resultList = underlyingList.stream().map(i -> i * 2).collect(Collectors.toList());
 		underlyingList.addAll(resultList);
 		System.out.println("\nConcatenated list: " + underlyingList);
+
+		Map<Integer, Long> countLetters = Files.lines(Paths.get(filename), java.nio.charset.StandardCharsets.ISO_8859_1)
+				.flatMapToInt(String::chars).filter(Character::isLetter).boxed()
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+		countLetters.forEach((i, l) -> {
+			System.out.format("%c", i);
+			System.out.println(": " + l);
+		});
 	}
 }
