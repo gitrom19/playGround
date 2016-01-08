@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -290,5 +291,40 @@ public class Tryouts {
 			System.out.format("%c", i);
 			System.out.println(": " + l);
 		});
+
+		System.out.println("\n\n####################### 10 Optionals ######################\n\n");
+
+		try {
+			Optional<String> opt = Stream.of(null, "hello", "world").findFirst();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
+
+		Stream.of(-2, -1, 0, 1, 2).reduce((i, j) -> i + j).ifPresent(summ -> System.out.println("sum: " + summ));
+		System.out.println("sum: " + Stream.of(-2, -1, 0, 1, 2).filter(i -> i > 10).reduce((i, j) -> i + j).orElse(33));
+		// equals reduce(0, (i,j) -> i+j);
+
+		Set<Integer> results = new HashSet<Integer>();
+		for (int i = 0; i < 3; i++) {
+			Optional<Boolean> res = underlyingList.stream().findAny().map(results::add);
+			if (res.isPresent()) {
+				if (res.get() == true) {
+					System.out.println("added item to set");
+			
+					
+					
+					
+					
+					
+					
+					
+					results.stream().forEach(item -> System.out.println(" " + item));
+				} else if (res.get() == false) {
+					System.out.println("item already in set");
+				} else if (res == Optional.<Boolean> empty()) {
+					System.out.println("Input stream was empty");
+				}
+			}
+		}
 	}
 }
